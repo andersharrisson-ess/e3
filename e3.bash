@@ -35,24 +35,12 @@ GIT_URL="https://github.com/icshwi"
 GIT_CMD="git clone"
 BOOL_GIT_CLONE="TRUE"
 
-declare -g  env="e3-env"
 declare -ga require_list=("e3-base" "e3-require")
 declare -ga module_list=()
-declare -ga db_module_list=()
 
-db_module_list+=("e3-iocStats");
-db_module_list+=("e3-mrfioc2");
-db_module_lits+=("e3-ipmiComm");
-
-function install_db
+function checkout_e3_plus
 {
-    local rep;
-    for rep in  ${db_module_list[@]}; do
-	pushd ${rep}
-	make db
-	make install
-	popd
-    done
+    git checkout target_path_test
 }
 
 function help
@@ -103,6 +91,7 @@ function setup_base_require
 	    git_clone ${rep}
 	fi
 	pushd ${rep}
+	checkout_e3_plus
 	make init
 	make env
 	if [ "${rep}" = "e3-base" ]; then
@@ -120,6 +109,7 @@ function build_base_require
     
     for rep in  ${require_list[@]}; do
 	pushd ${rep}
+	checkout_e3_plus
 	make build
 	if [ "${rep}" = "e3-require" ]; then
 	    make install
@@ -127,26 +117,6 @@ function build_base_require
 	popd
     done
 }
-
-
-#
-# Mandatory step in order to compile modules
-# Since we have the global env variables,
-# it should be OK to use them
-#
-  
-function setup_env
-{
-    local git_status=$1;  shift;
-    
-    if [ "${BOOL_GIT_CLONE}" = "$git_status" ]; then
-	git_clone ${env}
-    fi
-
-    source ${env}/setE3Env.bash
-
-}
-
 
 
 function print_list
@@ -166,6 +136,7 @@ function setup_modules
 	    git_clone ${rep}
 	fi
 	pushd ${rep}
+	checkout_e3_plus
 	make init
 	make env
 	popd
@@ -178,16 +149,11 @@ function build_modules
 
     for rep in  ${module_list[@]}; do
 	pushd ${rep}
+	checkout_e3_plus
 	make build
 	make install
 	popd
     done
-}
-
-function clean_env
-{
-    echo "Cleaning .... e3-env"
-    sudo rm -rf ${SC_TOP}/e3-env
 }
 
 
@@ -227,11 +193,6 @@ function git_pull
 	popd
     done
 
-    pushd ${env}
-    git pull
-    popd
-   
-    
     for rep in  ${module_list[@]}; do
 	pushd ${rep}
 	git pull
@@ -288,13 +249,13 @@ function git_push
 
 function module_loading_test_on_iocsh
 {
-    source ${SC_TOP}/e3-env/setE3Env.bash
+    source ${SC_TOP}/e3-require/tools/setE3Env.bash
 
     local IOC_TEST=/tmp/module_loading_test.cmd
     
     {
 	local PREFIX_MODULE="EPICS_MODULE_NAME:="
-	local PREFIX_LIBVERSION="export LIBVERSION:="
+	local PREFIX_LIBVERSION="E3_MODULE_VERSION:="
 	local mod=""
 	local ver=""
 	printf "var requireDebug 1\n";
@@ -305,7 +266,7 @@ function module_loading_test_on_iocsh
 		elif [[ $line =~ "${PREFIX_MODULE}" ]] ; then
 		    mod=${line#$PREFIX_MODULE}
 		fi
-	    done < ${SC_TOP}/${rep}/configure/CONFIG
+	    done < ${SC_TOP}/${rep}/configure/CONFIG_MODULE
 	    printf "#\n#\n"
 	    printf "# >>>>>\n";
 	    printf "# >>>>> MODULE Loading ........\n";
@@ -329,18 +290,14 @@ case "$1" in
     all)
 	setup_base_require "TRUE"
 	build_base_require
-	setup_env          "TRUE"
 	setup_modules      "TRUE"
 	build_modules
-	setup_env
-	install_db
 	;;
     base)
     	setup_base_require "TRUE"
 	build_base_require
 	;;
     modules)
-	setup_env     "TRUE"
 	setup_modules "TRUE"
 	build_modules
 	;;
@@ -361,20 +318,17 @@ case "$1" in
 	;;
     rmod)
 	clean_modules
-	setup_env      "TRUE"
 	setup_modules  "TRUE"
 	build_modules
 	;;
     clean)
 	clean_base_require
-	clean_env
 	clean_modules
 	;;
     cmod)
 	clean_modules
 	;;
     db)
-	setup_env
 	install_db
 	;;
     load)

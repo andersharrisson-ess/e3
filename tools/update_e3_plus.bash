@@ -116,6 +116,8 @@ EOF
 mv configure configure_old
 
 
+
+
 mkdir -p configure/E3
 
 
@@ -139,6 +141,13 @@ include \$(TOP)/configure/CONFIG_MODULE_DEV
 else
 include \$(TOP)/configure/CONFIG_MODULE
 endif
+
+# The definitions shown below can also be placed in an untracked RELEASE.local
+-include \$(TOP)/../RELEASE.local
+-include \$(TOP)/configure/RELEASE.local
+-include \$(TOP)/../CONFIG_MODULE.local
+-include \$(TOP)/configure/CONFIG_MODULE.local
+
 
 ## Asyn, ADSupport may needs to define other variables
 
@@ -657,6 +666,47 @@ echo ""       >> ${MODULE_NAME}.Makefile
 echo "# db rule is the default in RULES_E3, so add the empty one" >>  ${MODULE_NAME}.Makefile
 echo ""       >> ${MODULE_NAME}.Makefile
 echo "db:"    >> ${MODULE_NAME}.Makefile
+
+#
+#
+echo "" >> .gitignore
+echo "*.local" >> .gitignore
+echo "*~" >> .gitignore
+
+
+git add .gitignore
+git add ${MODULE_NAME}.Makefile
+git add Makefile
+git add configure/CONFIG
+git add configure/E3/*
+git add configure/RELEASE
+git add configure/RELEASE_DEV
+git add configure/RULES
+git add configure/CONFIG_MODULE
+git add configure/CONFIG_MODULE_DEV
+
+
+# git rm configure/BUILD_DEV
+# git rm configure/BUILD_E3
+# git rm configure/BUILD_EPICS
+# git rm configure/CONFIG_DEV
+# git rm configure/MK_DEFINES
+
+
+# cat > .gitignore <<EOF
+# *~
+# *-dev
+# modules.order
+# Module.symvers
+# Mkfile.old
+# dkms.conf
+# core.*
+# #*
+# .#*
+# \#*
+# *.local
+# EOF
+
 
 
 popd # e3-${MODULE_NAME}

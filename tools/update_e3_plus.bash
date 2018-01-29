@@ -20,7 +20,7 @@
 #   author  : Jeong Han Lee
 #   email   : jeonghan.lee@gmail.com
 #   date    : Monday, January 29 09:27:23 CET 2018
-#   version : 
+#   version : 0.0.1
 
 
 declare -gr SC_SCRIPT="$(realpath "$0")"
@@ -140,6 +140,9 @@ else
 include \$(TOP)/configure/CONFIG_MODULE
 endif
 
+## Asyn, ADSupport may needs to define other variables
+
+-include \$(TOP)/configure/CONFIG_OPTIONS
 
 ## It is not necessary to modify the following files in most case.
 ## Order is matter
@@ -636,7 +639,7 @@ cat > RULES_DB <<EOF
 ###   ..... 
 
 db: conf
-	#install -m 644 $(TOP)/template/cpci-evg230-ess.substitutions    $(E3_MODULE_SRC_PATH)/evgMrmApp/Db/
+	#install -m 644 \$(TOP)/template/cpci-evg230-ess.substitutions   \$(E3_MODULE_SRC_PATH)/evgMrmApp/Db/
 	\$(QUIET) \$(E3_MODULE_MAKE_CMDS) db
 
 
@@ -648,7 +651,12 @@ popd # configure/E3
 
 # db is the default in RULES_E3, so add the empty db in ${MODULE_NAME}.Makefile
 #
-echo "db: "   >>  ${MODULE_NAME}.Makefile
+
+sed -i 's/REQUIRE_TOOLS/E3_REQUIRE_TOOLS/g' ${MODULE_NAME}.Makefile
+echo ""       >> ${MODULE_NAME}.Makefile
+echo "# db rule is the default in RULES_E3, so add the empty one" >>  ${MODULE_NAME}.Makefile
+echo ""       >> ${MODULE_NAME}.Makefile
+echo "db:"    >> ${MODULE_NAME}.Makefile
 
 
 popd # e3-${MODULE_NAME}

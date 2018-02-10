@@ -19,8 +19,8 @@
 #
 #   author  : Jeong Han Lee
 #   email   : jeonghan.lee@gmail.com
-#   date    : Monday, January 29 09:27:23 CET 2018
-#   version : 0.0.1
+#   date    : Saturday, February 10 23:44:02 CET 2018
+#   version : 0.0.2
 
 
 declare -gr SC_SCRIPT="$(realpath "$0")"
@@ -191,10 +191,15 @@ EPICS_MODULE_TAG:=master
 E3_MODULE_VERSION:=master
 
 
-
+# ONLY IF this module has the sequencer dependency. However,
+# in most case, we don't need to enable the following line,
+# the default - latest version will be used
+#E3_SEQUENCER_NAME:=sequencer
+#E3_SEQUENCER_VERSION:=2.1.21
 #
 # In most case, we don't need to touch the following variables.
 #
+
 E3_MODULE_NAME:=\$(EPICS_MODULE_NAME)
 E3_MODULE_SRC_PATH:=\$(EPICS_MODULE_NAME)
 E3_MODULE_MAKEFILE:=\$(EPICS_MODULE_NAME).Makefile
@@ -209,7 +214,11 @@ EPICS_MODULE_TAG:=master
 #
 E3_MODULE_VERSION:=master
 
-
+# ONLY IF this module has the sequencer dependency. However,
+# in most case, we don't need to enable the following line,
+# the default - latest version will be used
+#E3_SEQUENCER_NAME:=sequencer
+#E3_SEQUENCER_VERSION:=2.1.21
 #
 # In most case, we don't need to touch the following variables.
 #
@@ -404,7 +413,11 @@ E3_REQUIRE_MAKEFILE_INPUT_OPTIONS += PROJECT="\$(E3_MODULE_NAME)"
 E3_REQUIRE_MAKEFILE_INPUT_OPTIONS += EPICS_MODULES="\$(E3_MODULES_PATH)"
 E3_REQUIRE_MAKEFILE_INPUT_OPTIONS += EPICS_LOCATION="\$(EPICS_BASE)"
 E3_REQUIRE_MAKEFILE_INPUT_OPTIONS += BUILDCLASSES="Linux"
-
+E3_REQUIRE_MAKEFILE_INPUT_OPTIONS += E3_SITEMODS_PATH="\$(E3_SITEMODS_PATH)"
+E3_REQUIRE_MAKEFILE_INPUT_OPTIONS += E3_SITEAPPS_PATH="\$(E3_SITEAPPS_PATH)"
+E3_REQUIRE_MAKEFILE_INPUT_OPTIONS += E3_SITELIBS_PATH="\$(E3_SITELIBS_PATH)"
+E3_REQUIRE_MAKEFILE_INPUT_OPTIONS += E3_SEQUENCER_NAME="\$(E3_SEQUENCER_NAME)"
+E3_REQUIRE_MAKEFILE_INPUT_OPTIONS += E3_SEQUENCER_VERSION="\$(E3_SEQUENCER_VERSION)"
 
 E3_MODULE_MAKE_CMDS:=make \$(E3_REQUIRE_MAKEFILE_INPUT_OPTIONS)
 
@@ -422,6 +435,11 @@ export EPICS_BASE
 export EPICS_HOST_ARCH
 export E3_REQUIRE_TOOLS
 export E3_MODULE_VERSION
+#export E3_SITEMODS_PATH
+#export E3_SITEAPPS_PATH
+#export E3_SITELIBS_PATH
+#export E3_SEQUENCER_NAME
+#export E3_SEQUENCER_VERSION
 
 EOF
 

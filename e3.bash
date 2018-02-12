@@ -19,8 +19,8 @@
 #
 #   author  : Jeong Han Lee
 #   email   : jeonghan.lee@gmail.com
-#   date    : Thursday, November 30 21:51:11 CET 2017
-#   version : 0.0.6
+#   date    : Monday, February 12 09:52:27 CET 2018
+#   version : 0.0.7
 
 
 declare -gr SC_SCRIPT="$(realpath "$0")"
@@ -96,6 +96,7 @@ function setup_base_require
 	make env
 	if [ "${rep}" = "e3-base" ]; then
 	    make pkgs
+	    make patch
 	fi
 	popd
     done

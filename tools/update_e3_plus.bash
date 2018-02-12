@@ -19,8 +19,8 @@
 #
 #   author  : Jeong Han Lee
 #   email   : jeonghan.lee@gmail.com
-#   date    : Saturday, February 10 23:44:02 CET 2018
-#   version : 0.0.2
+#   date    : Monday, February 12 11:32:01 CET 2018
+#   version : 0.0.3
 
 
 declare -gr SC_SCRIPT="$(realpath "$0")"
@@ -33,6 +33,22 @@ function pushd { builtin pushd "$@" > /dev/null; }
 function popd  { builtin popd  "$@" > /dev/null; }
 
 ICS_GIT_URL="https://github.com/icshwi"
+
+function read_file_get_string
+{
+    local FILENAME=$1
+    local PREFIX=$2
+
+    local val=""
+    while read line; do
+	if [[ $line =~ "${PREFIX}" ]] ; then
+	    val=${line#$PREFIX}
+	fi
+    done < ${FILENAME}
+
+    echo "$val"
+}
+
 
 
 function usage
@@ -113,8 +129,49 @@ include \$(TOP)/configure/RULES
 
 EOF
 
+
+
 mv configure configure_old
 
+
+declare -g epics_module_tag=""
+declare -g e3_module_version=""
+declare -g epics_module_dev_tag==""
+declare -g e3_module_dev_version=""
+
+
+config_file=configure_old/CONFIG
+
+
+if [ ! -e "$config_file" ]; then
+    # doesn't exist
+    epics_module_tag="master"
+    e3_module_version="master"
+else
+    # exist
+    epics_module_tag="$(read_file_get_string  "${config_file}" "export EPICS_MODULE_TAG:=")"
+    e3_module_version="$(read_file_get_string "${config_file}" "export LIBVERSION:=")"
+fi
+
+config_dev_file=configure_old/CONFIG_DEV
+
+
+if [ ! -e "$config_dev_file" ]; then
+    # doesn't exist
+    epics_module_dev_tag="master"
+    e3_module_dev_version="develop"
+    
+else
+    # exist
+    epics_module_dev_tag="$(read_file_get_string  "${config_dev_file}" "export EPICS_MODULE_TAG:=")"
+    e3_module_dev_version="$(read_file_get_string "${config_dev_file}" "export LIBVERSION:=")"
+fi
+
+echo ""
+echo "EPICS_Module_TAG      : $epics_module_tag"
+echo "E3_MODULE_VERSION     : $e3_module_version"
+echo "EPICS_Module_DEV_TAG  : $epics_module_dev_tag"
+echo "E3_MODULE_DEV_VERSION : $e3_module_dev_version"
 
 
 
@@ -186,9 +243,9 @@ EOF
 cat > CONFIG_MODULE <<EOF
 #
 EPICS_MODULE_NAME:=${MODULE_NAME}
-EPICS_MODULE_TAG:=master
+EPICS_MODULE_TAG:=${epics_module_tag}
 #
-E3_MODULE_VERSION:=master
+E3_MODULE_VERSION:=${e3_module_version}
 
 
 # ONLY IF this module has the sequencer dependency. However,
@@ -210,9 +267,9 @@ EOF
 cat > CONFIG_MODULE_DEV <<EOF
 #
 EPICS_MODULE_NAME:=${MODULE_NAME}
-EPICS_MODULE_TAG:=master
+EPICS_MODULE_TAG:=${epics_module_dev_tag}
 #
-E3_MODULE_VERSION:=master
+E3_MODULE_VERSION:=${e3_module_dev_version}
 
 # ONLY IF this module has the sequencer dependency. However,
 # in most case, we don't need to enable the following line,
@@ -503,8 +560,11 @@ cat > RULES_EPICS <<EOF
 .PHONY: epics epics-clean
 
 epics:
-	\$(QUIET)echo "EPICS_BASE=\$(EPICS_BASE)"       > \$(TOP)/\$(E3_MODULE_SRC_PATH)/configure/RELEASE
-#	\$(QUIET)echo "INSTALL_LOCATION=\$(M_DEVLIB2)"  > \$(TOP)/\$(E3_MODULE_SRC_PATH)/configure/CONFIG_SITE
+#	\$(QUIET)echo "SSCAN=\$(M_SSCAN)"                > \$(TOP)/\$(E3_MODULE_SRC_PATH)/configure/RELEASE
+#	\$(QUIET)echo "SNCSEQ=\$(M_SNCSEQ)"             >> \$(TOP)/\$(E3_MODULE_SRC_PATH)/configure/RELEASE
+	\$(QUIET)echo "EPICS_BASE=\$(EPICS_BASE)"       >> \$(TOP)/\$(E3_MODULE_SRC_PATH)/configure/RELEASE
+	\$(QUIET)echo "CHECK_RELEASE = YES"              > \$(TOP)/\$(E3_MODULE_SRC_PATH)/configure/CONFIG_SITE
+#	\$(QUIET)echo "INSTALL_LOCATION=\$(M_DEVLIB2)"  >> \$(TOP)/\$(E3_MODULE_SRC_PATH)/configure/CONFIG_SITE
 	\$(SUDOBASH) "\$(MAKE) -C \$(E3_MODULE_SRC_PATH)"
 
 epics-clean:
@@ -687,9 +747,11 @@ echo "db:"    >> ${MODULE_NAME}.Makefile
 
 #
 #
-echo "" >> .gitignore
+echo ""        >> .gitignore
 echo "*.local" >> .gitignore
-echo "*~" >> .gitignore
+echo "*~"      >> .gitignore
+echo "\#*"     >> .gitignore
+
 
 
 git add .gitignore
@@ -704,11 +766,30 @@ git add configure/CONFIG_MODULE
 git add configure/CONFIG_MODULE_DEV
 
 
-# git rm configure/BUILD_DEV
-# git rm configure/BUILD_E3
-# git rm configure/BUILD_EPICS
-# git rm configure/CONFIG_DEV
-# git rm configure/MK_DEFINES
+if [ -e "configure/BUILD_DB" ]; then
+    git rm configure/BUILD_DB
+fi
+
+if [ -e "configure/BUILD_DEV" ]; then
+    git rm configure/BUILD_DEV
+fi
+
+if [ -e "configure/BUILD_E3" ]; then
+    git rm configure/BUILD_E3
+fi
+
+if [ -e "configure/BUILD_EPICS" ]; then
+    git rm configure/BUILD_EPICS
+fi
+
+if [ -e "configure/CONFIG_DEV" ]; then
+    git rm configure/CONFIG_DEV
+fi
+
+if [ -e "configure/MK_DEFINES" ]; then
+    git rm configure/MK_DEFINES
+fi
+
 
 
 # cat > .gitignore <<EOF
@@ -725,6 +806,11 @@ git add configure/CONFIG_MODULE_DEV
 # *.local
 # EOF
 
+echo ""
+echo "Please modify the following files : "
+echo "           configure/CONFIG_MODULE"
+echo "           configure/CONFIG_MODULE_DEV"
+echo "           configure/E3/RULES_EPICS"
 
 
 popd # e3-${MODULE_NAME}

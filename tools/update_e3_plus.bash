@@ -174,6 +174,50 @@ echo "EPICS_Module_DEV_TAG  : $epics_module_dev_tag"
 echo "E3_MODULE_DEV_VERSION : $e3_module_dev_version"
 
 
+mkdir -p patch/Site
+
+pushd patch/Site
+
+cat > README.md <<EOF
+# Site Specific EPICS Module Patch Files
+
+## Changes
+The changes were tested in local environemnt, and commits to the forked repository and do pull request to the epics community module repository.
+
+* Check the original HASH, and your own master
+* feb8856 : The original HASH
+* master : Changed
+
+
+## How to create a p0 patch file between commits
+
+
+* Show what the difference between commits
+
+
+* Create p0 patch
+
+```
+$ git diff feb8856 master --no-prefix > ../patch/Site/what_ever_filename.p0.patch
+```
+
+EOF
+
+
+
+cat > HISTORY.md <<EOF
+# what_ever_filename.p0.patch
+
+Generic Description.....
+
+* created by Jeong Han Lee, han.lee@esss.se
+* related URL or reference https://github.com/icshwi
+* Tuesday, February 13 13:24:57 CET 2018
+EOF
+
+
+
+popd
 
 mkdir -p configure/E3
 
@@ -294,6 +338,7 @@ cat > RULES <<EOF
 # include \$(EPICS_BASE)/configure/RULES
 
 include \$(TOP)/configure/E3/DEFINES_FT
+-include \$(TOP)/configure/E3/RULES_PATCH
 include \$(TOP)/configure/E3/RULES_E3
 include \$(TOP)/configure/E3/RULES_EPICS
 
@@ -306,6 +351,24 @@ include \$(TOP)/configure/E3/RULES_DEV
 endif
 
 
+EOF
+
+
+
+cat > CONFIG_OPTIONS <<EOF
+# One should install libusb-1.0.0
+# Debian apt-get install libusb-1.0-0-dev libusb-1.0-0
+# USR_INCLUDES 
+# $ pkg-config --cflags libusb-1.0
+#   -I/usr/include/libusb-1.0
+# USR_LDFLAGS
+# $ pkg-config --libs libusb-1.0
+# $ -lusb-1.0 
+#
+#ifeq (linux-x86_64, \$(T_A))
+#  DRV_USBTMC=YES
+#  export DRV_USBTMC
+#endif
 EOF
 
 popd # configure 
@@ -513,6 +576,23 @@ git submodule update --init --recursive \$@/.
 git submodule update --remote --merge \$@/
 endef
 
+define patch_site
+for i in \$(wildcard \$(TOP)/patch/Site/*p0.patch); do\
+	printf "\nPatching %s with the file : %s\n" "\$(E3_MODULE_SRC_PATH)" "$$i"; \
+	patch -d \$(E3_MODULE_SRC_PATH) --ignore-whitespace -p0 < $$i;\
+done
+endef
+
+
+define patch_revert_site
+for i in \$(wildcard \$(TOP)/patch/Site/*p0.patch); do\
+	printf "\nPatching %s with the file : %s\n" "\$(E3_MODULE_SRC_PATH)" "$$i"; \
+	patch -R -d \$(E3_MODULE_SRC_PATH) --ignore-whitespace -p0 < $$i;\
+done
+
+endef
+
+
 ifndef VERBOSE
   QUIET := @
 endif
@@ -524,10 +604,28 @@ endif
 
 ### Exclude the following variables to display 
 VARS_EXCLUDES+=git_update
+VARS_EXCLUDES+=patch_site
+VARS_EXCLUDES+=patch_revert_site
 VARS_EXCLUDES+=QUIET
 VARS_EXCLUDES+=SHELL
 
 EOF
+
+cat > RULES_PATCH <<EOF
+
+.PHONY: patch patchrevert
+
+
+## Apply Patch Files 
+patch:
+	\$(QUIET) \$(call patch_site)
+
+## Revert Patch Files 
+patchrevert:
+	\$(QUIET) \$(call patch_revert_site)
+
+EOF
+	
 
 
 cat  > RULES_VARS <<EOF
@@ -560,7 +658,8 @@ cat > RULES_EPICS <<EOF
 .PHONY: epics epics-clean
 
 epics:
-#	\$(QUIET)echo "SSCAN=\$(M_SSCAN)"                > \$(TOP)/\$(E3_MODULE_SRC_PATH)/configure/RELEASE
+#	\$(QUIET)echo "ASYN=\$(M_ASYN)"                  > \$(TOP)/\$(E3_MODULE_SRC_PATH)/configure/RELEASE
+#	\$(QUIET)echo "SSCAN=\$(M_SSCAN)"               >> \$(TOP)/\$(E3_MODULE_SRC_PATH)/configure/RELEASE
 #	\$(QUIET)echo "SNCSEQ=\$(M_SNCSEQ)"             >> \$(TOP)/\$(E3_MODULE_SRC_PATH)/configure/RELEASE
 	\$(QUIET)echo "EPICS_BASE=\$(EPICS_BASE)"       >> \$(TOP)/\$(E3_MODULE_SRC_PATH)/configure/RELEASE
 	\$(QUIET)echo "CHECK_RELEASE = YES"              > \$(TOP)/\$(E3_MODULE_SRC_PATH)/configure/CONFIG_SITE
@@ -670,7 +769,7 @@ EOF
 cat > RULES_DEV <<EOF
 # -*- mode: Makefile;-*-
 
-.PHONY: devvars devenv devinit devbuild devclean devinstall devrebuild devuninstall devdistclean
+.PHONY: devvars devenv devinit devbuild devclean devinstall devrebuild devuninstall devdistclean devepics devepics-clean devpatch devpatchrevert
 
 devvars: vars
 
@@ -689,6 +788,10 @@ devinstall: nonexists
 devrebuild: nonexists
 devuninstall: nonexists
 devdistclean: nonexists
+devepics: nonexists
+devepics-clean: nonexists
+devpatch: nonexists
+devpatchrevert: nonexists
 nonexists:
 	\$(QUIET)echo ""
 	\$(QUIET)echo "------------------------------------------------------------"
@@ -706,6 +809,10 @@ devuninstall: uninstall
 devdistclean: clean
 	\$(QUIET)echo "Removing \$(E3_MODULE_SRC_PATH) ......... "
 	rm -rf \$(E3_MODULE_SRC_PATH)
+devepics: epics
+devepics-clean: epics-clean
+devpatch: patch
+devpatchrevert: patchrevert
 endif
 
 
@@ -751,6 +858,11 @@ echo ""        >> .gitignore
 echo "*.local" >> .gitignore
 echo "*~"      >> .gitignore
 echo "\#*"     >> .gitignore
+echo "*-dev"   >> .gitignore
+echo ".cvsignore" >> .gitignore
+echo "*_old/"   >> .gitignore
+echo ".\#*"   >> .gitignore
+
 
 
 
@@ -764,7 +876,7 @@ git add configure/RELEASE_DEV
 git add configure/RULES
 git add configure/CONFIG_MODULE
 git add configure/CONFIG_MODULE_DEV
-
+git add configure/CONFIG_OPTIONS
 
 if [ -e "configure/BUILD_DB" ]; then
     git rm configure/BUILD_DB
@@ -791,20 +903,6 @@ if [ -e "configure/MK_DEFINES" ]; then
 fi
 
 
-
-# cat > .gitignore <<EOF
-# *~
-# *-dev
-# modules.order
-# Module.symvers
-# Mkfile.old
-# dkms.conf
-# core.*
-# #*
-# .#*
-# \#*
-# *.local
-# EOF
 
 echo ""
 echo "Please modify the following files : "

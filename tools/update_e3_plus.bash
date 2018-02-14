@@ -197,9 +197,9 @@ The changes were tested in local environemnt, and commits to the forked reposito
 
 * Create p0 patch
 
-```
-$ git diff feb8856 master --no-prefix > ../patch/Site/what_ever_filename.p0.patch
-```
+\`\`\`
+\$git diff feb8856 master --no-prefix > ../patch/Site/what_ever_filename.p0.patch
+\`\`\`
 
 EOF
 
@@ -866,6 +866,7 @@ echo ".\#*"   >> .gitignore
 
 
 
+
 git add .gitignore
 git add ${MODULE_NAME}.Makefile
 git add Makefile
@@ -877,30 +878,34 @@ git add configure/RULES
 git add configure/CONFIG_MODULE
 git add configure/CONFIG_MODULE_DEV
 git add configure/CONFIG_OPTIONS
+git add patch
 
-if [ -e "configure/BUILD_DB" ]; then
+
+if [ -e "configure_old/BUILD_DB" ]; then
     git rm configure/BUILD_DB
 fi
 
-if [ -e "configure/BUILD_DEV" ]; then
+if [ -e "configure_old/BUILD_DEV" ]; then
     git rm configure/BUILD_DEV
 fi
 
-if [ -e "configure/BUILD_E3" ]; then
+if [ -e "configure_old/BUILD_E3" ]; then
     git rm configure/BUILD_E3
 fi
 
-if [ -e "configure/BUILD_EPICS" ]; then
+if [ -e "configure_old/BUILD_EPICS" ]; then
     git rm configure/BUILD_EPICS
 fi
 
-if [ -e "configure/CONFIG_DEV" ]; then
+if [ -e "configure_old/CONFIG_DEV" ]; then
     git rm configure/CONFIG_DEV
 fi
 
-if [ -e "configure/MK_DEFINES" ]; then
+if [ -e "configure_old/MK_DEFINES" ]; then
     git rm configure/MK_DEFINES
 fi
+
+
 
 
 

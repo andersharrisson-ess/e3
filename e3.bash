@@ -19,8 +19,8 @@
 #
 #   author  : Jeong Han Lee
 #   email   : jeonghan.lee@gmail.com
-#   date    : Monday, February 12 09:52:27 CET 2018
-#   version : 0.0.7
+#   date    : Thursday, February 15 23:23:35 CET 2018
+#   version : 0.0.8
 
 
 declare -gr SC_SCRIPT="$(realpath "$0")"
@@ -268,6 +268,9 @@ function module_loading_test_on_iocsh
 		    mod=${line#$PREFIX_MODULE}
 		fi
 	    done < ${SC_TOP}/${rep}/configure/CONFIG_MODULE
+	    if [ "${mod}" = "StreamDevice" ]; then
+		mod="stream"
+	    fi
 	    printf "#\n#\n"
 	    printf "# >>>>>\n";
 	    printf "# >>>>> MODULE Loading ........\n";

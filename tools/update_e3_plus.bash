@@ -509,6 +509,8 @@ E3_MODULES_INSTALL_LOCATION_DBD_LINK:=\$(E3_SITELIBS_PATH)/\$(E3_MODULE_NAME).db
 # It is a bit weird, it would be better to implement within driver.makefile later
 # Assumption : we are using the same lib name from driver.makefile 
 E3_MODULES_LIBNAME:=lib\$(E3_MODULE_NAME).so
+E3_MODULES_LIBLINKNAME:=\$(E3_MODULES_LIBNAME).\$(E3_MODULE_VERSION)
+
 
 INSTALLED_EPICS_BASE_ARCHS_PATHS=\$(sort \$(dir \$(wildcard \$(EPICS_BASE)/bin/*/)))
 TEMP_INSTALLED_EPICS_BASE_ARCHS=\$(INSTALLED_EPICS_BASE_ARCHS_PATHS:\$(EPICS_BASE)/bin/%=%)
@@ -673,10 +675,9 @@ epics-clean:
 EOF
 
 cat > RULES_E3 <<EOF
+.DEFAULT_GOAL := help
 
 .PHONY: help default install uninstall build rebuild clean conf
-
-default: help
 
 
 # # help is defined in 
@@ -697,6 +698,8 @@ help:
 	{ helpMsg = \$\$0 }'                              \\
 	\$(MAKEFILE_LIST) | column -ts:	
 
+
+default: help
 
 
 ## Install : \$(E3_MODULE_NAME)
@@ -761,7 +764,7 @@ install_links: \$(INSTALLED_EPICS_BASE_ARCHS)
 
 \$(INSTALLED_EPICS_BASE_ARCHS):
 	\$(SUDO) mkdir -p \$(E3_SITELIBS_PATH)/\$@
-	\$(SUDO) ln -sf \$(E3_MODULES_INSTALL_LOCATION)/lib/\$@/\$(E3_MODULES_LIBNAME) \$(E3_SITELIBS_PATH)/\$@/\$(E3_MODULE_NAME).lib.\$(E3_MODULE_VERSION)
+	\$(SUDO) ln -sf \$(E3_MODULES_INSTALL_LOCATION)/lib/\$@/\$(E3_MODULES_LIBNAME) \$(E3_SITELIBS_PATH)/\$@/\$(E3_MODULES_LIBLINKNAME)
 
 
 EOF

@@ -19,8 +19,8 @@
 #
 #   author  : Jeong Han Lee
 #   email   : jeonghan.lee@gmail.com
-#   date    : Monday, February 12 11:32:01 CET 2018
-#   version : 0.0.3
+#   date    : Wednesday, February 21 17:21:18 CET 2018
+#   version : 0.0.4
 
 
 declare -gr SC_SCRIPT="$(realpath "$0")"
@@ -579,17 +579,17 @@ git submodule update --remote --merge \$@/
 endef
 
 define patch_site
-for i in \$(wildcard \$(TOP)/patch/Site/*p0.patch); do\
-	printf "\nPatching %s with the file : %s\n" "\$(E3_MODULE_SRC_PATH)" "$$i"; \
-	patch -d \$(E3_MODULE_SRC_PATH) --ignore-whitespace -p0 < $$i;\
+for i in \$(wildcard \$(TOP)/patch/Site/*p0.patch); do \\
+	printf "\nPatching %s with the file : %s\n" "\$(E3_MODULE_SRC_PATH)" "\$\$i"; \\
+	patch -d \$(E3_MODULE_SRC_PATH) --ignore-whitespace -p0 < \$\$i;\\
 done
 endef
 
 
 define patch_revert_site
-for i in \$(wildcard \$(TOP)/patch/Site/*p0.patch); do\
-	printf "\nPatching %s with the file : %s\n" "\$(E3_MODULE_SRC_PATH)" "$$i"; \
-	patch -R -d \$(E3_MODULE_SRC_PATH) --ignore-whitespace -p0 < $$i;\
+for i in \$(wildcard \$(TOP)/patch/Site/*p0.patch); do \\
+	printf "\nPatching %s with the file : %s\n" "\$(E3_MODULE_SRC_PATH)" "\$\$i"; \\
+	patch -R -d \$(E3_MODULE_SRC_PATH) --ignore-whitespace -p0 < \$\$i; \\
 done
 
 endef

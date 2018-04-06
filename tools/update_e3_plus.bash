@@ -19,8 +19,8 @@
 #
 #   author  : Jeong Han Lee
 #   email   : jeonghan.lee@gmail.com
-#   date    : Wednesday, February 21 17:21:18 CET 2018
-#   version : 0.0.4
+#   date    : Friday, April  6 23:18:18 CEST 2018
+#   version : 0.0.5
 
 
 declare -gr SC_SCRIPT="$(realpath "$0")"
@@ -754,13 +754,13 @@ checkout:
 
 .PHONY: install_links \$(INSTALLED_EPICS_BASE_ARCHS)
 
-
+# GNU fine is needed
 install_links: \$(INSTALLED_EPICS_BASE_ARCHS)
 	\$(SUDO) ln -snf \$(E3_MODULES_INSTALL_LOCATION_INC) \$(E3_MODULES_INSTALL_LOCATION_INC_LINK)
 	\$(SUDO) ln -snf \$(E3_MODULES_INSTALL_LOCATION_DB)  \$(E3_MODULES_INSTALL_LOCATION_DB_LINK)
 	\$(SUDO) ln -snf \$(E3_MODULES_INSTALL_LOCATION_BIN) \$(E3_MODULES_INSTALL_LOCATION_BIN_LINK)
 	\$(SUDO) ln -sf  \$(E3_MODULES_INSTALL_LOCATION_DBD) \$(E3_MODULES_INSTALL_LOCATION_DBD_LINK)
-
+	\$(SUDO) find \$(E3_SITELIBS_PATH) -xtype l -delete 
 
 \$(INSTALLED_EPICS_BASE_ARCHS):
 	\$(SUDO) mkdir -p \$(E3_SITELIBS_PATH)/\$@

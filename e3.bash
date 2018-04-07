@@ -19,8 +19,8 @@
 #
 #   author  : Jeong Han Lee
 #   email   : jeonghan.lee@gmail.com
-#   date    : Thursday, February 15 23:23:35 CET 2018
-#   version : 0.0.8
+#   date    : Saturday, April  7 15:10:45 CEST 2018
+#   version : 0.0.9
 
 
 declare -gr SC_SCRIPT="$(realpath "$0")"
@@ -37,6 +37,18 @@ BOOL_GIT_CLONE="TRUE"
 
 declare -ga require_list=("e3-base" "e3-require")
 declare -ga module_list=()
+
+
+function die
+{
+    error=${1:-1}
+    ## exits with 1 if error number not given
+    shift
+    [ -n "$*" ] &&
+	printf "%s%s: %s\n" "$scriptname" ${version:+" ($version)"} "$*" >&2
+    exit "$error"
+}
+
 
 function checkout_e3_plus
 {
@@ -111,7 +123,7 @@ function build_base_require
     for rep in  ${require_list[@]}; do
 	pushd ${rep}
 	checkout_e3_plus
-	make build
+	make build ||  die 1 "Building Error at ${rep}: Please check the building error" ;
 	if [ "${rep}" = "e3-require" ]; then
 	    make install
 	fi
@@ -140,6 +152,7 @@ function setup_modules
 	checkout_e3_plus
 	make init
 	make env
+	make patch
 	popd
     done
 
@@ -151,7 +164,7 @@ function build_modules
     for rep in  ${module_list[@]}; do
 	pushd ${rep}
 	checkout_e3_plus
-	make build
+	make build ||  die 1 "Building Error at ${rep}: Please check the building error" ;
 	make install
 	popd
     done
@@ -319,6 +332,9 @@ case "$1" in
 	;;
     push)
 	git_push
+	;;
+    mod)
+	build_modules
 	;;
     rmod)
 	clean_modules

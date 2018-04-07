@@ -18,20 +18,25 @@
 #
 #   author  : Jeong Han Lee
 #   email   : jeonghan.lee@gmail.com
-#   date    : Thursday, February 22 01:21:23 CET 2018
+#   date    : Saturday, April  7 15:35:59 CEST 2018
 #   version : 0.0.1
 
 
 # Example, how to use
+#
+# This script is used to copy a file to all modules directory, and
+# prepare all git commands together.
 # 
-# bash mod_mt.bash pull
+# $ bash mod_mt.bash pull
 # copy the right file in TOP
-# for example, DEFINES_FT
-# bash mod_mt.bash copy "DEFINES_FT" "configure/E3"
-# bash mod_mt.bash diff 
-# bash mod_mt.bash add "configure/E3/DEFINES_FT"
-# bash mod_mt.bash commit "add/fix DEFINES_FT to handle patch"
-# bash mod_mt.bash push
+# for example, RULES_E3
+# $ scp e3-autosave/configure/E3/RULES_E3 .
+# Define the target directory in each module 
+# $ bash mod_mt.bash copy "RULES_E3" "configure/E3"
+# $ bash mod_mt.bash diff 
+# $ bash mod_mt.bash add "configure/E3/RULES_E3"
+# $ bash mod_mt.bash commit "add/fix RULES_E3 to clean up the broken symlink"
+# $ bash mod_mt.bash push
 #
 
 declare -gr SC_SCRIPT="$(realpath "$0")"

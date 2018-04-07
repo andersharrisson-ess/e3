@@ -66,14 +66,17 @@ build:
 env:
 	$(QUIET) bash e3.bash env
 
-## Setup Base and Require
+## Setup and Build Base and Require
 base:
 	$(QUIET) bash e3.bash base
 
-## Setup Modules
+## Setup and Build Modules
 modules:
 	$(QUIET) bash e3.bash modules
 
+## Build Modules
+mod:
+	$(QUIET) bash e3.bash mod
 # Other rules for debugging..
 pull:
 	$(QUIET) bash e3.bash pull

@@ -29,7 +29,7 @@ e3-tsclib
 e3-ifcdaqdrv2
 e3-nds3
 e3-nds3epics
-e3-ifc14edrv
+#e3-ifc14edrv
 e3-s7plc
 e3-recsync
 #

@@ -17,8 +17,8 @@
 #
 # Author  : Jeong Han Lee
 # email   : han.lee@esss.se
-# Date    : Friday, April 13 10:25:21 CEST 2018
-# version : 0.0.5
+# Date    : Friday, April 13 16:57:46 CEST 2018
+# version : 0.0.6
 
 TOP:=$(CURDIR)
 
@@ -83,6 +83,7 @@ pull:
 
 ## ReSetup and Rebuild modules from scratch 
 rmod:
+	$(QUIET) bash e3.bash cmod
 	$(QUIET) bash e3.bash rmod
 
 ## Inflating and install DB files

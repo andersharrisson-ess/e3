@@ -15,26 +15,30 @@ This is the e3 initial setup script. It is now testing while I am working on ind
 The following command guides us to lead the first glimpse of E3. SUDO permission is needed to setup it.
 
 ```
- e3 (master)$ make build
+$ git clone https://github.com/icshwi/e3 e3+
+$ cd e3+
+$ git checkout target_path_test
+$ make build
 ```
+If there is no error, please test whether compiled modules can be loaded correctly or not.
+```
+$ make load
+```
+
 
 After finishing the installation, source the dynamic environment via
 
 ```
-e3 (master)$ source e3-env/setE3Env.bash
+$ source e3-require/tools/setE3Env.bash
 ```
 
-And install converting DB files into the proper module directory with the current EPICS base setup. (This is the workaround temporarily, we will find the better way to handle them later)
-
-```
-e3 (master)$ make db
-```
+The you have the E3+ in your active terminal only.
 
 
 
 Then, one can run the example ioc through 
 ```
-e3 (master)$ iocsh.bash iocStats.cmd
+$ iocsh.bash iocStats.cmd
 ```
 
 Open another terminal, set the environment via source first, then

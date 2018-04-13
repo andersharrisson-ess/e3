@@ -85,6 +85,9 @@ pull:
 rmod:
 	$(QUIET) bash e3.bash cmod
 	$(QUIET) bash e3.bash rmod
+## Setup  modules 
+imod:
+	$(QUIET) bash e3.bash imod
 
 ## Inflating and install DB files
 db:

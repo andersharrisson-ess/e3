@@ -348,6 +348,9 @@ case "$1" in
     cmod)
 	clean_modules
 	;;
+    imod)
+	setup_modules  "TRUE"
+	;;
     db)
 	install_db
 	;;

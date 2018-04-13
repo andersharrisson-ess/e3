@@ -19,8 +19,8 @@
 #
 #   author  : Jeong Han Lee
 #   email   : jeonghan.lee@gmail.com
-#   date    : Saturday, April  7 15:10:45 CEST 2018
-#   version : 0.0.9
+#   date    : Friday, April 13 10:25:32 CEST 2018
+#   version : 0.1.0
 
 
 declare -gr SC_SCRIPT="$(realpath "$0")"
@@ -104,7 +104,7 @@ function setup_base_require
 	fi
 	pushd ${rep}
 	checkout_e3_plus
-	make init
+	make init ||  die 1 "MAKE init ERROR at ${rep}: Please check it" ;
 	make env
 	if [ "${rep}" = "e3-base" ]; then
 	    make pkgs
@@ -125,7 +125,7 @@ function build_base_require
 	checkout_e3_plus
 	make build ||  die 1 "Building Error at ${rep}: Please check the building error" ;
 	if [ "${rep}" = "e3-require" ]; then
-	    make install
+	    make install ||  die 1 "MAKE INSTALL ERROR at ${rep}: Please check it" ;
 	fi
 	popd
     done
@@ -150,7 +150,7 @@ function setup_modules
 	fi
 	pushd ${rep}
 	checkout_e3_plus
-	make init
+	make init ||  die 1 "MAKE init ERROR at ${rep}: Please check it" ; 
 	make env
 	make patch
 	popd
@@ -165,7 +165,7 @@ function build_modules
 	pushd ${rep}
 	checkout_e3_plus
 	make build ||  die 1 "Building Error at ${rep}: Please check the building error" ;
-	make install
+	make install  ||  die 1 "MAKE INSTALL ERROR at ${rep}: Please check it" ;
 	popd
     done
 }

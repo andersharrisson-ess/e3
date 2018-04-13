@@ -17,8 +17,8 @@
 #
 # Author  : Jeong Han Lee
 # email   : han.lee@esss.se
-# Date    : Monday, November 20 21:24:08 CET 2017
-# version : 0.0.4
+# Date    : Friday, April 13 10:25:21 CEST 2018
+# version : 0.0.5
 
 TOP:=$(CURDIR)
 
@@ -71,18 +71,18 @@ base:
 	$(QUIET) bash e3.bash base
 
 ## Setup and Build Modules
-modules:
+mod:
 	$(QUIET) bash e3.bash modules
 
 ## Build Modules
-mod:
+bmod:
 	$(QUIET) bash e3.bash mod
 # Other rules for debugging..
 pull:
 	$(QUIET) bash e3.bash pull
 
-## Rebuild modules from scratch 
-rmodule:
+## ReSetup and Rebuild modules from scratch 
+rmod:
 	$(QUIET) bash e3.bash rmod
 
 ## Inflating and install DB files

@@ -15,7 +15,7 @@ e3-sequencer
 e3-sscan
 e3-ip
 e3-calc
-e3-pcre
+#e3-pcre
 e3-StreamDevice
 ##e3-stream
 e3-keypress
@@ -33,8 +33,8 @@ e3-tsclib
 e3-s7plc
 e3-recsync
 #
-e3-ecat2
-e3-ecmc
-e3-axiscore
-e3-ethercatmc
+#e3-ecat2
+#e3-ecmc
+#e3-axiscore
+#e3-ethercatmc
 

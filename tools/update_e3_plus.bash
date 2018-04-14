@@ -243,13 +243,6 @@ else
 include \$(TOP)/configure/CONFIG_MODULE
 endif
 
-# The definitions shown below can also be placed in an untracked RELEASE.local
--include \$(TOP)/../RELEASE.local
--include \$(TOP)/configure/RELEASE.local
--include \$(TOP)/../CONFIG_MODULE.local
--include \$(TOP)/configure/CONFIG_MODULE.local
-
-
 ## Asyn, ADSupport may needs to define other variables
 
 -include \$(TOP)/configure/CONFIG_OPTIONS
@@ -272,6 +265,10 @@ EPICS_BASE=/testing/epics/base-3.15.5
 E3_REQUIRE_NAME:=require
 E3_REQUIRE_VERSION:=0.0.0
 
+# The definitions shown below can also be placed in an untracked RELEASE.local
+-include \$(TOP)/../RELEASE.local
+-include \$(TOP)/configure/RELEASE.local
+
 EOF
 
 
@@ -280,6 +277,10 @@ EPICS_BASE=/testing/epics/base-3.15.5
 
 E3_REQUIRE_NAME:=require
 E3_REQUIRE_VERSION:=0.0.0
+
+# The definitions shown below can also be placed in an untracked RELEASE.local
+-include \$(TOP)/../RELEASE_DEV.local
+-include \$(TOP)/configure/RELEASE_DEV.local
 
 EOF
 
@@ -305,6 +306,10 @@ E3_MODULE_NAME:=\$(EPICS_MODULE_NAME)
 E3_MODULE_SRC_PATH:=\$(EPICS_MODULE_NAME)
 E3_MODULE_MAKEFILE:=\$(EPICS_MODULE_NAME).Makefile
 
+
+# The definitions shown below can also be placed in an untracked
+-include \$(TOP)/configure/CONFIG_MODULE.local
+
 EOF
 
 
@@ -329,6 +334,11 @@ E3_MODULE_MAKEFILE:=\$(EPICS_MODULE_NAME).Makefile
 
 #export DEV_GIT_URL:="https://where your git repo"
 E3_MODULE_DEV_GITURL:="https://github.com/epics-modules/${MODULE_NAME}"
+
+
+
+# The definitions shown below can also be placed in an untracked
+-include \$(TOP)/configure/CONFIG_MODULE_DEV.local
 
 EOF
 

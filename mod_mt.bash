@@ -18,8 +18,8 @@
 #
 #   author  : Jeong Han Lee
 #   email   : jeonghan.lee@gmail.com
-#   date    : Saturday, April  7 15:35:59 CEST 2018
-#   version : 0.0.1
+#   date    : Saturday, April 14 23:30:01 CEST 2018
+#   version : 0.0.2
 
 
 # Example, how to use
@@ -33,8 +33,8 @@
 # $ scp e3-autosave/configure/E3/RULES_E3 .
 # Define the target directory in each module 
 # $ bash mod_mt.bash copy "RULES_E3" "configure/E3"
-# $ bash mod_mt.bash diff 
-# $ bash mod_mt.bash add "configure/E3/RULES_E3"
+# $ bash mod_mt.bash diff "RULES_E3" "configure/E3"
+# $ bash mod_mt.bash add  "RULES_E3" "configure/E3"
 # $ bash mod_mt.bash commit "add/fix RULES_E3 to clean up the broken symlink"
 # $ bash mod_mt.bash push
 #
@@ -96,11 +96,14 @@ function git_add
 {
     local rep;
     local git_add_file=$1; shift;
+    local target_dir=$1; shift;
+    local target=${target_dir}/${git_add_file}
+    
     for rep in  ${module_list[@]}; do
 	pushd ${rep}
 	echo ""
-	echo ">> git add ${git_add_file} in ${rep}"
-	git add ${git_add_file}
+	echo ">> git add ${target} in ${rep}"
+	git add ${target}
 	popd
     done
 }
@@ -109,11 +112,12 @@ function git_diff
 {
     local rep;
     local git_add_file=$1; shift;
+    local target=$1; shift;
     for rep in  ${module_list[@]}; do
 	pushd ${rep}
 	echo ""
 	echo ">> git diff in ${rep}"
-	git diff
+	git diff ${target}/${git_add_file}
 	popd
     done
 }
@@ -145,7 +149,6 @@ function git_push
     done
 }
 
-
 # a file should be in e3 directory
 # 
 # bash ugly_maintain.bash copy "DEFINES_FT" "configure/E3"
@@ -163,6 +166,23 @@ function copy_a_file
     done
 }
 
+# afile is ${SC_TOP}/afile
+# bfile is file and path, e.g.,
+# bfile is configure/CONFIG_MODULE
+
+function append_afile_to_bfile
+{
+    local rep;
+    local afile=$1; shift;
+    local bfile=$1; shift;
+    for rep in  ${module_list[@]}; do
+	pushd ${rep}
+	echo ""
+	echo ">> append $afile to $bfile in $rep"
+	cat ${SC_TOP}/$afile >> $bfile
+	popd
+    done  
+}
 
 module_list=$(get_module_list ${SC_TOP}/configure/MODULES)
 
@@ -175,10 +195,10 @@ case "$1" in
 	git_pull
 	;;
     diff)
-	git_diff
+	git_diff  "$2" "$3"
 	;;
     add)
-	git_add "$2"
+	git_add "$2" "$3"
 	;;
     commit)
 	git_commit "$2"
@@ -189,8 +209,21 @@ case "$1" in
     copy)
 	copy_a_file "$2" "$3"
 	;;
+    append)
+        # update.txt has the following lines :
+	#
+	# # The definitions shown below can also be placed in an untracked CONFIG_MODULE.local
+	# -include $(TOP)/configure/CONFIG_MODULE.local
+	#
+	# ./mod_mt.bash append "update.txt" "configure/CONFIG_MODULE"
+	# ./mod_mt.bash diff "CONFIG_MODULE" "configure"
+	# ./mod_mt.bash add  "CONFIG_MODULE" "configure"
+	# ./mod_mt.bash commit "whatever I would like to say"
+	# ./mod_mt.bash push
+	append_afile_to_bfile "$2" "$3"
+	;;
     *)
-	echo "no help"
+	echo "no help, please look at code."
 	;;
 esac
 

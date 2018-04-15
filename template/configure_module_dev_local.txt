@@ -1,0 +1,2 @@
+# The definitions shown below can also be placed in an untracked CONFIG_MODULE_DEV.local
+-include $(TOP)/configure/CONFIG_MODULE_DEV.local

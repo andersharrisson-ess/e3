@@ -18,8 +18,8 @@
 #
 #   author  : Jeong Han Lee
 #   email   : jeonghan.lee@gmail.com
-#   date    : Sunday, April 15 23:53:40 CEST 2018
-#   version : 0.0.3
+#   date    : Monday, April 16 00:14:59 CEST 2018
+#   version : 0.0.4
 
 
 # Example, how to use
@@ -237,7 +237,8 @@ function usage
 	echo "";
 	echo " < group_name > ";
 	echo ""
-	echo "           timing : mrf timing    related modules";
+	echo "           common : epics modules"
+	echo "           timing : mrf timing    modules";
 	echo "           ifc    : ifc platform  related modules";
 	echo "           ecat   : ethercat      related modules";
 	echo "           area   : area detector related modules";
@@ -318,10 +319,10 @@ case "${GROUP_NAME}" in
 	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_ECAT)"   )
 	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_AD)"     )
 	;;
-    # * )
-	
+    * )
+	module_list+=( "iocStats" )
     #  	usage
-	
+	;;
     # ;;
 esac
 
@@ -347,7 +348,10 @@ esac
 
 case "$1" in
     env)
-	print_list "${module_list[@]}"
+	echo ">> Vertical display for the selected modules :"
+	echo ""
+	print_list
+	echo ""
 	;;
     pull)
 	git_pull

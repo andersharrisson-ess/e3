@@ -1,0 +1,4 @@
+# The definitions shown below can also be placed in an untracked RELEASE_DEV.local
+-include $(TOP)/../RELEASE_DEV.local
+-include $(TOP)/configure/RELEASE_DEV.local
+

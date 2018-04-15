@@ -32,9 +32,9 @@
 # for example, RULES_E3
 # $ scp e3-autosave/configure/E3/RULES_E3 .
 # Define the target directory in each module 
-# $ bash maintain_e3.bash copy "RULES_E3" "configure/E3"
-# $ bash maintain_e3.bash diff "RULES_E3" "configure/E3"
-# $ bash maintain_e3.bash add  "RULES_E3" "configure/E3"
+# $ bash maintain_e3.bash copy "configure/E3/RULES_E3"
+# $ bash maintain_e3.bash diff "configure/E3/RULES_E3"
+# $ bash maintain_e3.bash add  "configure/E3"RULES_E3"
 # $ bash maintain_e3.bash commit "add/fix RULES_E3 to clean up the broken symlink"
 # $ bash maintain_e3.bash push
 #
@@ -121,14 +121,11 @@ function git_add
 {
     local rep;
     local git_add_file=$1; shift;
-    local target_dir=$1; shift;
-    local target=${target_dir}/${git_add_file}
-    
     for rep in  ${module_list[@]}; do
 	pushd ${rep}
 	echo ""
-	echo ">> git add ${target} in ${rep}"
-	git add ${target}
+	echo ">> git add ${git_add_file} in ${rep}"
+	git add ${git_add_file}
 	popd
     done
 }
@@ -137,12 +134,11 @@ function git_diff
 {
     local rep;
     local git_add_file=$1; shift;
-    local target=$1; shift;
-    for rep in  ${module_list[@]}; do
+     for rep in  ${module_list[@]}; do
 	pushd ${rep}
 	echo ""
 	echo ">> git diff in ${rep}"
-	git diff ${target}/${git_add_file}
+	git diff ${git_add_file}
 	popd
     done
 }
@@ -176,12 +172,14 @@ function git_push
 
 # a file should be in e3 directory
 # 
-# bash ugly_maintain.bash copy "DEFINES_FT" "configure/E3"
+# bash maintain_e3.bash copy"configure/E3/DEFINES_FT"
 function copy_a_file
 {
     local rep;
-    local afile=$1; shift;
-    local target=$1; shift;
+    local input=$1; shift;
+    local afile=${input##*/};
+    local target=${input%/*}
+    
     for rep in  ${module_list[@]}; do
 	pushd ${rep}
 	echo ""
@@ -193,13 +191,14 @@ function copy_a_file
 
 # afile is ${SC_TOP}/afile
 # bfile is file and path, e.g.,
-# bfile is configure/CONFIG_MODULE
+# For example bfile could be configure/CONFIG_MODULE
 
 function append_afile_to_bfile
 {
     local rep;
     local afile=$1; shift;
     local bfile=$1; shift;
+
     for rep in  ${module_list[@]}; do
 	pushd ${rep}
 	echo ""
@@ -357,10 +356,10 @@ case "$1" in
 	git_pull
 	;;
     diff)
-	git_diff  "$2" "$3"
+	git_diff "$2" 
 	;;
     add)
-	git_add "$2" "$3"
+	git_add "$2"
 	;;
     commit)
 	git_commit "$2"
@@ -372,32 +371,25 @@ case "$1" in
 	copy_a_file "$2" "$3"
 	;;
     append)
-        # update.txt has the following lines :
+	# Example, for append
 	#
-	# # The definitions shown below can also be placed in an untracked CONFIG_MODULE.local
-	# -include $(TOP)/configure/CONFIG_MODULE.local
+	# $ ./maintain_e3.bash -g ecat append template/configure_module_local.txt "configure/CONFIG_MODULE"
+	# $ ./maintain_e3.bash -g ecat append template/configure_module_dev_local.txt "configure/CONFIG_MODULE_DEV"
+	# $ ./maintain_e3.bash -g ecat append template/release_local.txt "configure/RELEASE"
+	# $ ./maintain_e3.bash -g ecat append template/release_dev_local.txt "configure/RELEASE_DEV"
 	#
-	# ./maintain_e3.bash -g area  append "update.txt" "configure/CONFIG_MODULE"
-	# ./maintain_e3.bash -g area diff "CONFIG_MODULE" "configure"
-	# ./maintain_e3.bash -g area add  "CONFIG_MODULE" "configure"
-	# ./maintain_e3.bash -g area commit "whatever I would like to say"
-	# ./maintain_e3.bash -g area push
-	# The definitions shown below can also be placed in an untracked RELEASE.local
-	#-include $(TOP)/../RELEASE.local
-	#-include $(TOP)/configure/RELEASE.local
-	# ./maintain_e3.bash -g area  append "update.txt" "configure/RELEASE"
-	# ./maintain_e3.bash -g area diff "RELEASE" "configure"
-	# ./maintain_e3.bash -g area add  "RELEASE" "configure"
-	# ./maintain_e3.bash -g area commit "whatever I would like to say"
-	# ./maintain_e3.bash -g area push
-	# The definitions shown below can also be placed in an untracked RELEASE_DEV.local
-	# -include $(TOP)/../RELEASE_DEV.local
-	# -include $(TOP)/configure/RELEASE_DEV.local
-	# ./maintain_e3.bash -g area  append "update.txt" "configure/RELEASE_DEV"
-	# ./maintain_e3.bash -g area diff "RELEASE_DEV" "configure"
-	# ./maintain_e3.bash -g area add  "RELEASE_DEV" "configure"
-	# ./maintain_e3.bash -g area commit "whatever I would like to say"
-	# ./maintain_e3.bash -g area push
+	# $ ./maintain_e3.bash -g ecat diff "configure/RELEASE_DEV"
+	# OR
+	# $ ./maintain_e3.bash -g ecat diff
+	#
+	# $ ./maintain_e3.bash -g ecat add "configure/CONFIG_MODULE"
+	# $ ./maintain_e3.bash -g ecat add "configure/CONFIG_MODULE_DEV"
+	# $ ./maintain_e3.bash -g ecat add "configure/RELEASE"
+	# $ ./maintain_e3.bash -g ecat add "configure/RELEASE_DEV"
+	#
+	# $ ./maintain_e3.bash -g ecat  commit  "support local release, release_dev, config_module, and config_module_dev"
+	#
+	# $ ./maintain_e3.bash -g ecat push
 	append_afile_to_bfile "$2" "$3"
 	;;
     version)

@@ -19,8 +19,8 @@
 #
 #   author  : Jeong Han Lee
 #   email   : jeonghan.lee@gmail.com
-#   date    : Friday, April 13 10:25:32 CEST 2018
-#   version : 0.1.0
+#   date    : Sunday, April 15 22:14:25 CEST 2018
+#   version : 0.2.0
 
 
 declare -gr SC_SCRIPT="$(realpath "$0")"
@@ -35,8 +35,11 @@ GIT_URL="https://github.com/icshwi"
 GIT_CMD="git clone"
 BOOL_GIT_CLONE="TRUE"
 
-declare -ga require_list=("e3-base" "e3-require")
+
+declare -ga base_list=("e3-base")
+declare -ga require_list=("e3-require")
 declare -ga module_list=()
+declare -ga m_list=()
 
 
 function die
@@ -55,20 +58,6 @@ function checkout_e3_plus
     git checkout target_path_test
 }
 
-function help
-{
-    echo "">&2
-    echo " Usage: $0 <arg>  ">&2 
-    echo ""
-    echo "          <arg>    : info">&2 
-    echo ""
-    echo "           all     : Setup and Build ALL">&2
-    echo "           base    : Setup and Build Base and Require">&2
-    echo "           modules : Setup and Build all modules">&2
-    echo "           env     : Print all modules list">&2
-    echo "">&2
-    echo "">&2 	
-}
 
 function git_clone
 {
@@ -80,8 +69,9 @@ function git_clone
 
 function get_module_list
 {
-    local i;
-    let i=0
+    local empty_string="";
+    declare -a entry=();
+ 
     while IFS= read -r line_data; do
 	if [ "$line_data" ]; then
 	    # Skip command #
@@ -90,52 +80,110 @@ function get_module_list
 	    ((++i))
 	fi
     done < $1
+ 
     echo ${entry[@]}
 }
 
 
 
-function setup_base_require
+function setup_base
+{
+    local git_status=$1; shift;
+    for rep in  ${base_list[@]}; do
+	if [ "${BOOL_GIT_CLONE}" = "$git_status" ]; then
+	    git_clone ${rep} ||  die 1 "git clone ERROR at ${rep}: the target ${rep} may be exist, Please check it" ;
+	fi
+	pushd ${rep}
+	checkout_e3_plus
+	make init   ||  die 1 "MAKE init ERROR at ${rep}: Please check it" ;
+	make env
+	make pkgs
+	make patch  ||  die 1 "MAKE patch ERROR at ${rep}: Please check it" ;
+	popd
+    done
+}
+
+
+
+function build_base
+{
+
+    sudo -v
+    for rep in  ${base_list[@]}; do
+	pushd ${rep}
+	checkout_e3_plus
+	make build ||  die 1 "Building Error at ${rep}: Please check the building error" ;
+	popd
+    done
+}
+
+
+function clean_base
+{
+
+    local rep;
+    for rep in  ${base_list[@]}; do
+	echo "Cleaning .... $rep"
+	sudo rm -rf ${SC_TOP}/${rep}
+    done
+}
+
+
+
+
+
+function setup_require
 {
     local git_status=$1; shift;
     for rep in  ${require_list[@]}; do
 	if [ "${BOOL_GIT_CLONE}" = "$git_status" ]; then
-	    git_clone ${rep}
-	fi
+	    git_clone ${rep}  ||  die 1 "git clone ERROR at ${rep}: the target ${rep} may be exist, Please check it" ;
+	fi 
 	pushd ${rep}
 	checkout_e3_plus
 	make init ||  die 1 "MAKE init ERROR at ${rep}: Please check it" ;
 	make env
-	if [ "${rep}" = "e3-base" ]; then
-	    make pkgs
-	    make patch
-	fi
 	popd
     done
 }
 
-function build_base_require
+
+
+function build_require
 {
 
     sudo -v
     
-    
     for rep in  ${require_list[@]}; do
 	pushd ${rep}
 	checkout_e3_plus
-	make build ||  die 1 "Building Error at ${rep}: Please check the building error" ;
-	if [ "${rep}" = "e3-require" ]; then
-	    make install ||  die 1 "MAKE INSTALL ERROR at ${rep}: Please check it" ;
-	fi
+	make build   ||  die 1 "Building Error at ${rep}: Please check the building error" ;
+	make install ||  die 1 "MAKE INSTALL ERROR at ${rep}: Please check it" ;
 	popd
     done
 }
 
 
+function clean_require
+{
+
+    local rep;
+    for rep in  ${require_list[@]}; do
+	echo "Cleaning .... $rep"
+	make uninstall 
+	sudo rm -rf ${SC_TOP}/${rep}
+    done
+}
+
+
+
+
+
+
 function print_list
 {
-    local array=$1; shift;
-    for a_list in ${array[@]}; do
+    local a_list;
+    for a_list in ${module_list[@]}; do
 	printf " %s\n" "$a_list";
     done
 }
@@ -146,7 +194,7 @@ function setup_modules
     local rep;
     for rep in  ${module_list[@]}; do
 	if [ "${BOOL_GIT_CLONE}" = "$git_status" ]; then
-	    git_clone ${rep}
+	    git_clone ${rep}  ||  die 1 "git clone ERROR at ${rep}: the target ${rep} may be exist, Please check it" ;
 	fi
 	pushd ${rep}
 	checkout_e3_plus
@@ -164,23 +212,11 @@ function build_modules
     for rep in  ${module_list[@]}; do
 	pushd ${rep}
 	checkout_e3_plus
-	make build ||  die 1 "Building Error at ${rep}: Please check the building error" ;
+	make build    ||  die 1 "Building Error at ${rep}: Please check the building error" ;
 	make install  ||  die 1 "MAKE INSTALL ERROR at ${rep}: Please check it" ;
 	popd
     done
 }
-
-
-function clean_base_require
-{
-
-    local rep;
-    for rep in  ${require_list[@]}; do
-	echo "Cleaning .... $rep"
-	sudo rm -rf ${SC_TOP}/${rep}
-    done
-}
-
 
 
 function clean_modules
@@ -190,7 +226,7 @@ function clean_modules
     for rep in  ${module_list[@]}; do
 	echo "Cleaning .... $rep"
 	pushd ${rep}
-	make uninstall
+	make uninstall 
 	popd
 	sudo rm -rf ${SC_TOP}/${rep}
     done
@@ -201,6 +237,13 @@ function clean_modules
 function git_pull
 {
     local rep;
+
+    for rep in  ${base_list[@]}; do
+	pushd ${rep}
+	git pull
+	popd
+    done
+	
     for rep in  ${require_list[@]}; do
 	pushd ${rep}
 	git pull
@@ -290,7 +333,7 @@ function module_loading_test_on_iocsh
 	    printf "# >>>>> MODULE NAME ..... ${mod}\n";
 	    printf "# >>>>>        VER  ..... ${ver}\n";
 	    printf "# >>>>>\n";
-	    printf "require ${mod}, ${ver}\n";
+	    printf "require ${mod},${ver}\n";
 	    printf "# >>>>>\n";
 	    printf "#\n#\n"
 	done
@@ -300,26 +343,209 @@ function module_loading_test_on_iocsh
     exec iocsh.bash ${IOC_TEST}
 }
 
-module_list=$(get_module_list ${SC_TOP}/configure/MODULES)
+function base_all
+{
+    clean_base;
+    setup_base "TRUE";
+    build_base;
+}
+
+function req_all
+{
+    clean_require;
+    setup_require "TRUE";
+    build_require;
+}
+
+function mod_all
+{
+    clean_modules;
+    setup_modules  "TRUE";
+    build_modules;
+}
+
+function usage
+{
+    {
+	echo "";
+	echo "Usage    : $0 [ -g <group_name> ] <option> ";
+	echo "";
+	echo " < group_name > ";
+	echo ""
+	echo "           timing : mrf timing    related modules";
+	echo "           ifc    : ifc platform  related modules";
+	echo "           ecat   : ethercat      related modules";
+	echo "           area   : area detector related modules";
+	echo "           test   : common, timing, ifc modules";
+	echo "           jhlee  : common, timing, ifc, area modules";
+	echo "           all    : common, timing, ifc, ecat, area modules";
+	echo "";
+	echo " < option > ";
+	echo "";
+      
+	echo "           env    : Print enabled Modules";
+	echo ""
+	echo "           cbase  : Clean Base";
+	echo "           ibase  : Init  Base ";
+	echo "           bbase  : Build, Install Base";
+	echo "            base  : cbase, ibase, bbase";
+	echo ""           
+	echo ""
+	echo "           creq   : Clean Require";
+	echo "           ireq   : Init  Require";
+	echo "           breq   : Build, Install Require";
+	echo "            req   : creq, ireq, breq";
+	echo ""           
+	echo ""
+	echo "           cmod   : Clean Modules";
+	echo "           imod   : Init  Modules";
+	echo "           bmod   : Build, Install Modules";
+	echo "            mod   : cmod, imod, bmod";
+	echo ""
+	echo "           load   : Load all installed Modules into iocsh.bash";
+	echo ""           
+	echo ""    
+	
+	echo "  Examples : ";
+	echo ""    
+	echo "          $0 env";
+	echo "          $0 -g timing env";
+	echo "          $0 base";
+        echo "          $0 req";
+	echo "          $0 -g ecat cmod";
+	echo "          $0 -g timing load";
+	echo "   ";       
+	echo "";
+	
+    } 1>&2;
+    exit 1; 
+}
+
+ 
+while getopts " :g:" opt; do
+    case "${opt}" in
+	g)
+	    GROUP_NAME=${OPTARG}
+	    ;;
+	*)
+	    usage
+	    ;;
+    esac
+done
+shift $((OPTIND-1))
+
+module_list+=$(get_module_list ${SC_TOP}/configure/MODULES_COMMON)
+
+
+case "${GROUP_NAME}" in
+    timing*)
+	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_TIMING)" )
+	;;
+    ifc)
+	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_IFC)" )
+	;;
+    ecat)
+	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_ECAT)" )
+	;;
+    area)
+	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_AD)" )
+	;;
+    test)
+	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_TIMING)" )
+#	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_IFC)"    )
+#	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_AD)"     )
+	;;
+    jhlee)
+	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_TIMING)" )
+	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_IFC)"    )
+	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_AD)"     )
+	echo ""
+	;;
+    all)
+	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_TIMING)" )
+	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_IFC)"    )
+	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_ECAT)"   )
+	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_AD)"     )
+	;;
+    # * )
+	
+    #  	usage
+	
+    # ;;
+esac
+
+
+case "$1" in
+    base)
+	echo ""
+	;;
+    req)
+	echo ""
+	;;
+    clean)
+	echo ""
+	;;
+    *) 
+	echo ">> Selected Modules are :"
+	echo ${module_list[@]}
+	echo ""
+	;;
+
+esac
 
 
 case "$1" in
     all)
-	setup_base_require "TRUE"
-	build_base_require
-	setup_modules      "TRUE"
-	build_modules
+	base_all;
+	req_all;
+	mod_all;
 	;;
-    base)
-    	setup_base_require "TRUE"
-	build_base_require
-	;;
-    modules)
-	setup_modules "TRUE"
-	build_modules
+    clean)
+	clean_base;
+	clean_require;
+	clean_modules;
 	;;
     env)
-	print_list "${module_list[@]}"
+	echo ">> Vertical display for the selected modules :"
+	echo ""
+	print_list
+	echo ""
+	;;
+    cbase)
+	clean_base;
+	;;
+    ibase)
+	setup_base "TRUE";
+	;;
+    bbase)
+	build_base;
+	;;
+    base)
+	base_all;
+	;;
+    creq)
+	clean_require
+	;;
+    ireq)
+	setup_require "TRUE";
+	;;
+    breq)
+	build_require;
+	;;
+    req)
+	req_all;
+	;;
+    cmod)
+	clean_modules
+	;;
+    imod)
+	setup_modules  "TRUE"
+	;;
+    bmod)
+	build_modules
+	;;
+    mod)
+	mod_all
 	;;
     pull)
 	git_pull
@@ -333,24 +559,6 @@ case "$1" in
     push)
 	git_push
 	;;
-    mod)
-	build_modules
-	;;
-    rmod)
-	clean_modules
-	setup_modules  "TRUE"
-	build_modules
-	;;
-    clean)
-	clean_base_require
-	clean_modules
-	;;
-    cmod)
-	clean_modules
-	;;
-    imod)
-	setup_modules  "TRUE"
-	;;
     db)
 	install_db
 	;;
@@ -358,7 +566,7 @@ case "$1" in
 	module_loading_test_on_iocsh
 	;;
     *)
-	help
+	usage
 	;;
 esac
 

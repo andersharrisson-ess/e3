@@ -170,9 +170,13 @@ function git_push
     done
 }
 
-# a file should be in e3 directory
+# Mantatory 'afile' should be in e3 directory
+# input arg should 'target_path/afile'
+# For exmaple, 
+# ./maintain_e3.bash copy "configure/E3/DEFINES_FT"
+# in this case,
+# DEFINES_FT should be in E3
 # 
-# bash maintain_e3.bash copy"configure/E3/DEFINES_FT"
 function copy_a_file
 {
     local rep;
@@ -188,10 +192,6 @@ function copy_a_file
 	popd
     done
 }
-
-# afile is ${SC_TOP}/afile
-# bfile is file and path, e.g.,
-# For example bfile could be configure/CONFIG_MODULE
 
 function append_afile_to_bfile
 {
@@ -253,11 +253,15 @@ function usage
 	echo "           version : Print all module versions";
        	echo "           pull    : git pull in all modules"           
 	echo "           push    : git push in all modules"
-	echo "           many others : look at source code"
+	echo " "
+	echo "           others  : LOOK at $0 for Examples"
 	echo ""
 	echo "  Examples : ";
 	echo ""    
 	echo "          $0 env";
+	echo "          $0 -g all env";
+	echo "          $0 version";
+	echo "          $0 -g common version";
 	echo "   ";       
 	echo "";
 	
@@ -319,30 +323,17 @@ case "${GROUP_NAME}" in
 	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_AD)"     )
 	;;
     * )
-	module_list+=( "iocStats" )
+	module_list+=( "e3-iocStats" )
     #  	usage
 	;;
     # ;;
 esac
 
 
-case "$1" in
-    base)
-	echo ""
-	;;
-    req)
-	echo ""
-	;;
-    clean)
-	echo ""
-	;;
-    *) 
-	echo ">> Selected Modules are :"
-	echo ${module_list[@]}
-	echo ""
-	;;
+echo ">> Selected Modules are :"
+echo ${module_list[@]}
+echo ""
 
-esac
 
 
 case "$1" in
@@ -353,22 +344,31 @@ case "$1" in
 	echo ""
 	;;
     pull)
+	# git pull for selected modules
 	git_pull
 	;;
     diff)
+	# check diff $2
+	# git diff $2 for selected modules
 	git_diff "$2" 
 	;;
     add)
+	# add $2 into repo for selected modules
+	# git add $2
 	git_add "$2"
 	;;
     commit)
+	# write commit messages for selected modules
+	# git commit -m "$2"
 	git_commit "$2"
 	;;
     push)
+	# git push for selected modules
 	git_push
 	;;
     copy)
-	copy_a_file "$2" "$3"
+	# 
+	copy_a_file "$2"
 	;;
     append)
 	# Example, for append
@@ -393,6 +393,7 @@ case "$1" in
 	append_afile_to_bfile "$2" "$3"
 	;;
     version)
+	# print epics tags and e3 version for selected modules
 	print_version_info
 	;;
     *)

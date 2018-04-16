@@ -31,13 +31,13 @@
 # copy the right file in TOP
 # for example, RULES_E3
 # $ scp e3-autosave/configure/E3/RULES_E3 .
-# Define the target directory in each module 
-# $ bash maintain_e3.bash copy "configure/E3/RULES_E3"
-# $ bash maintain_e3.bash diff "configure/E3/RULES_E3"
-# $ bash maintain_e3.bash add  "configure/E3"RULES_E3"
-# $ bash maintain_e3.bash commit "add/fix RULES_E3 to clean up the broken symlink"
-# $ bash maintain_e3.bash push
-#
+# Define the target directory in each module
+# e3+ $ scp  e3-iocStats/configure/E3/DEFINES_FT .
+# e3+ $ ./maintain_e3.bash -g ifc copy "configure/E3/DEFINES_FT"
+# e3+ $ ./maintain_e3.bash -g ifc diff "configure/E3/DEFINES_FT"
+# e3+ $ ./maintain_e3.bash -g ifc add "configure/E3/DEFINES_FT"
+# e3+ $ ./maintain_e3.bash -g ifc commit "fix patch function"
+# e3+ $ ./maintain_e3.bash -g ifc push
 
 declare -gr SC_SCRIPT="$(realpath "$0")"
 declare -gr SC_SCRIPTNAME=${0##*/}
@@ -367,7 +367,15 @@ case "$1" in
 	git_push
 	;;
     copy)
+	# Example, for copy
 	# 
+	# Define the target directory in each module
+	# $ scp  e3-iocStats/configure/E3/DEFINES_FT .
+	# $ ./maintain_e3.bash -g ifc copy "configure/E3/DEFINES_FT"
+	# $ ./maintain_e3.bash -g ifc diff "configure/E3/DEFINES_FT"
+	# $ ./maintain_e3.bash -g ifc add "configure/E3/DEFINES_FT"
+	# $ ./maintain_e3.bash -g ifc commit "fix patch function"
+	# $ ./maintain_e3.bash -g ifc push
 	copy_a_file "$2"
 	;;
     append)

@@ -19,8 +19,8 @@
 #
 #   author  : Jeong Han Lee
 #   email   : jeonghan.lee@gmail.com
-#   date    : Monday, April 16 09:26:22 CEST 2018
-#   version : 0.2.1
+#   date    : Tuesday, April 17 00:58:58 CEST 2018
+#   version : 0.2.2
 
 
 declare -gr SC_SCRIPT="$(realpath "$0")"
@@ -334,6 +334,16 @@ function module_loading_test_on_iocsh
 	    printf "# >>>>> MODULE NAME ..... ${mod}\n";
 	    printf "# >>>>>        VER  ..... ${ver}\n";
 	    printf "# >>>>>\n";
+
+	    if [[ ${mod} == AD* ]]; then
+		printf "#--------------------------------------- \n";
+		printf "# In ADSupport, ADCore, and ADSimDector, \n";
+		printf "# Simply ignore the following errors : \n";
+		printf " epicsEnvSet(\"TOP\",\"${SC_TOP}/${rep}\")\n"
+		printf " cd ${SC_TOP}/${rep}\n"
+		printf " < ${SC_TOP}/${rep}/cmds/load_libs.cmd\n"
+		printf "#--------------------------------------- \n";
+	    fi
 	    printf "require ${mod},${ver}\n";
 	    printf "# >>>>>\n";
 	    printf "#\n#\n"
@@ -379,6 +389,7 @@ function usage
 	echo "           ecat   : ethercat      related modules";
 	echo "           area   : area detector related modules";
 	echo "           test   : common, timing, ifc modules";
+	echo "           test2  : common, timing, area modules";
 	echo "           jhlee  : common, timing, ifc, area modules";
 	echo "           all    : common, timing, ifc, ecat, area modules";
 	echo "";
@@ -457,6 +468,12 @@ case "${GROUP_NAME}" in
 	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_TIMING)" )
 	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_IFC)"    )
 #	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_AD)"     )
+	;;
+    test2)
+	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_COMMON)" )
+	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_TIMING)" )
+#	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_IFC)"    )
+	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_AD)"     )
 	;;
     jhlee)
 	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_COMMON)" )

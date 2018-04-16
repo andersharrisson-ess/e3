@@ -19,13 +19,14 @@
 #
 #   author  : Jeong Han Lee
 #   email   : jeonghan.lee@gmail.com
-#   date    : Sunday, April 15 22:14:25 CEST 2018
-#   version : 0.2.0
+#   date    : Monday, April 16 09:26:22 CEST 2018
+#   version : 0.2.1
 
 
 declare -gr SC_SCRIPT="$(realpath "$0")"
 declare -gr SC_SCRIPTNAME=${0##*/}
-declare -gr SC_TOP="$(dirname "$SC_SCRIPT")"
+declare -gr SC_TOP="${SC_SCRIPT%/*}"
+
 
 function pushd { builtin pushd "$@" > /dev/null; }
 function popd  { builtin popd  "$@" > /dev/null; }
@@ -372,6 +373,7 @@ function usage
 	echo "";
 	echo " < group_name > ";
 	echo ""
+	echo "           common : epics modules"
 	echo "           timing : mrf timing    related modules";
 	echo "           ifc    : ifc platform  related modules";
 	echo "           ecat   : ethercat      related modules";
@@ -434,10 +436,10 @@ while getopts " :g:" opt; do
 done
 shift $((OPTIND-1))
 
-module_list+=$(get_module_list ${SC_TOP}/configure/MODULES_COMMON)
-
-
 case "${GROUP_NAME}" in
+    common)
+	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_COMMON)" )
+	;;
     timing*)
 	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_TIMING)" )
 	;;
@@ -451,27 +453,28 @@ case "${GROUP_NAME}" in
 	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_AD)" )
 	;;
     test)
+	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_COMMON)" )
 	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_TIMING)" )
-#	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_IFC)"    )
+	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_IFC)"    )
 #	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_AD)"     )
 	;;
     jhlee)
+	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_COMMON)" )
 	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_TIMING)" )
 	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_IFC)"    )
 	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_AD)"     )
 	echo ""
 	;;
     all)
+	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_COMMON)" )
 	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_TIMING)" )
 	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_IFC)"    )
 	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_ECAT)"   )
 	module_list+=( "$(get_module_list ${SC_TOP}/configure/MODULES_AD)"     )
 	;;
-    # * )
-	
-    #  	usage
-	
-    # ;;
+    * )
+	module_list+=( "e3-iocStats" )
+	;;
 esac
 
 

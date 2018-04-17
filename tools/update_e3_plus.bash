@@ -19,8 +19,8 @@
 #
 #   author  : Jeong Han Lee
 #   email   : jeonghan.lee@gmail.com
-#   date    : Friday, April  6 23:18:18 CEST 2018
-#   version : 0.0.5
+#   date    : Tuesday, April 17 21:21:17 CEST 2018
+#   version : 0.0.6
 
 
 declare -gr SC_SCRIPT="$(realpath "$0")"
@@ -260,10 +260,10 @@ EOF
 
 
 cat > RELEASE <<EOF
-EPICS_BASE=/testing/epics/base-3.15.5
+EPICS_BASE=/epics/base-3.15.5
 
 E3_REQUIRE_NAME:=require
-E3_REQUIRE_VERSION:=0.0.0
+E3_REQUIRE_VERSION:=3.0.0
 
 # The definitions shown below can also be placed in an untracked RELEASE.local
 -include \$(TOP)/../RELEASE.local
@@ -273,10 +273,10 @@ EOF
 
 
 cat > RELEASE_DEV <<EOF
-EPICS_BASE=/testing/epics/base-3.15.5
+EPICS_BASE=/epics/base-3.15.5
 
 E3_REQUIRE_NAME:=require
-E3_REQUIRE_VERSION:=0.0.0
+E3_REQUIRE_VERSION:=3.0.0
 
 # The definitions shown below can also be placed in an untracked RELEASE.local
 -include \$(TOP)/../RELEASE_DEV.local

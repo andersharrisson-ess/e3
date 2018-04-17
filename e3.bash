@@ -496,10 +496,10 @@ esac
 
 
 case "$1" in
-    base)
+    *base)
 	echo ""
 	;;
-    req)
+    *req)
 	echo ""
 	;;
     clean)

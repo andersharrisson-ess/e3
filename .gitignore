@@ -2,4 +2,4 @@ e3-*
 *#
 *.list
 .\#*
-core.*
+core*

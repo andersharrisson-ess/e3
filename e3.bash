@@ -19,8 +19,9 @@
 #
 #   author  : Jeong Han Lee
 #   email   : jeonghan.lee@gmail.com
-#   date    : Tuesday, April 17 00:58:58 CEST 2018
-#   version : 0.2.2
+#   date    : Wednesday, April 18 09:36:32 CEST 2018
+#   version : 0.2.3
+
 
 
 declare -gr SC_SCRIPT="$(realpath "$0")"
@@ -52,6 +53,25 @@ function die
 	printf "%s%s: %s\n" "$scriptname" ${version:+" ($version)"} "$*" >&2
     exit "$error"
 }
+
+EXIST=1
+NON_EXIST=0
+
+
+function checkIfDir
+{
+    
+    local dir=$1
+    local result=""
+    if [ ! -d "$dir" ]; then
+	result=$NON_EXIST
+	# doesn't exist
+    else
+	result=$EXIST
+	# exist
+    fi
+    echo "${result}"
+};
 
 
 function checkout_e3_plus
@@ -92,15 +112,20 @@ function setup_base
     local git_status=$1; shift;
     for rep in  ${base_list[@]}; do
 	if [ "${BOOL_GIT_CLONE}" = "$git_status" ]; then
-	    git_clone ${rep} ||  die 1 "git clone ERROR at ${rep}: the target ${rep} may be exist, Please check it" ;
+	    git_clone ${rep} ||  die 1 "${FUNCNAME[*]} : git clone ERROR at ${rep}: the target ${rep} may be exist, Please check it" ;
 	fi
-	pushd ${rep}
-	checkout_e3_plus
-	make init   ||  die 1 "MAKE init ERROR at ${rep}: Please check it" ;
-	make env
-	make pkgs
-	make patch  ||  die 1 "MAKE patch ERROR at ${rep}: Please check it" ;
-	popd
+	if [[ $(checkIfDir "${rep}") -eq "$EXIST" ]]; then
+	    pushd ${rep}
+	    checkout_e3_plus
+	    make init   ||  die 1 "${FUNCNAME[*]} : MAKE init ERROR at ${rep}: Please check it" ;
+	    make env
+	    make pkgs
+	    make patch  ||  die 1 "${FUNCNAME[*]} : MAKE patch ERROR at ${rep}: Please check it" ;
+	    popd
+	else
+	    die 1 "${FUNCNAME[*]} : ${rep} doesn't exist";
+	fi
+	
     done
 }
 
@@ -111,10 +136,14 @@ function build_base
 
     sudo -v
     for rep in  ${base_list[@]}; do
-	pushd ${rep}
-	checkout_e3_plus
-	make build ||  die 1 "Building Error at ${rep}: Please check the building error" ;
-	popd
+	if [[ $(checkIfDir "${rep}") -eq "$EXIST" ]]; then
+	    pushd ${rep}
+	    checkout_e3_plus
+	    make build ||  die 1 "${FUNCNAME[*]} : Building Error at ${rep}: Please check the building error" ;
+	    popd
+	else
+	    die 1 "${FUNCNAME[*]} : ${rep} doesn't exist";
+	fi
     done
 }
 
@@ -124,8 +153,12 @@ function clean_base
 
     local rep;
     for rep in  ${base_list[@]}; do
-	echo "Cleaning .... $rep"
-	sudo rm -rf ${SC_TOP}/${rep}
+	if [[ $(checkIfDir "${rep}") -eq "$EXIST" ]]; then
+	    echo "Cleaning .... $rep"
+	    sudo rm -rf ${SC_TOP}/${rep}
+	else
+	    printf " %20s: SKIP %20s, we cannot find it\n"  "${FUNCNAME[*]}"  "${rep}"
+	fi
     done
 }
 
@@ -138,13 +171,17 @@ function setup_require
     local git_status=$1; shift;
     for rep in  ${require_list[@]}; do
 	if [ "${BOOL_GIT_CLONE}" = "$git_status" ]; then
-	    git_clone ${rep}  ||  die 1 "git clone ERROR at ${rep}: the target ${rep} may be exist, Please check it" ;
-	fi 
-	pushd ${rep}
-	checkout_e3_plus
-	make init ||  die 1 "MAKE init ERROR at ${rep}: Please check it" ;
-	make env
-	popd
+	    git_clone ${rep}  ||  die 1 "${FUNCNAME[*]} : git clone ERROR at ${rep}: the target ${rep} may be exist, Please check it" ;
+	fi
+	if [[ $(checkIfDir "${rep}") -eq "$EXIST" ]]; then
+	    pushd ${rep}
+	    checkout_e3_plus
+	    make init ||  die 1 "${FUNCNAME[*]} : MAKE init ERROR at ${rep}: Please check it" ;
+	    make env
+	    popd
+	else
+	    die 1 "${rep} doesn't exist";
+	fi
     done
 }
 
@@ -156,23 +193,30 @@ function build_require
     sudo -v
     
     for rep in  ${require_list[@]}; do
-	pushd ${rep}
-	checkout_e3_plus
-	make build   ||  die 1 "Building Error at ${rep}: Please check the building error" ;
-	make install ||  die 1 "MAKE INSTALL ERROR at ${rep}: Please check it" ;
-	popd
+	if [[ $(checkIfDir "${rep}") -eq "$EXIST" ]]; then
+	    pushd ${rep}
+	    checkout_e3_plus
+	    make build   ||  die 1 "${FUNCNAME[*]} : Building Error at ${rep}: Please check the building error" ;
+	    make install ||  die 1 "${FUNCNAME[*]} : MAKE INSTALL ERROR at ${rep}: Please check it" ;
+	    popd
+	else
+	    die 1 "${rep} doesn't exist";
+	fi
     done
 }
 
 
 function clean_require
 {
-
     local rep;
     for rep in  ${require_list[@]}; do
-	echo "Cleaning .... $rep"
-	make uninstall 
-	sudo rm -rf ${SC_TOP}/${rep}
+	if [[ $(checkIfDir "${rep}") -eq "$EXIST" ]]; then
+	    echo "Cleaning .... $rep"
+	    make uninstall 
+	    sudo rm -rf ${SC_TOP}/${rep}
+	else
+	    printf " %20s: SKIP %20s, we cannot find it\n"  "${FUNCNAME[*]}"  "${rep}"
+	fi
     done
 }
 
@@ -195,14 +239,18 @@ function setup_modules
     local rep;
     for rep in  ${module_list[@]}; do
 	if [ "${BOOL_GIT_CLONE}" = "$git_status" ]; then
-	    git_clone ${rep}  ||  die 1 "git clone ERROR at ${rep}: the target ${rep} may be exist, Please check it" ;
+	    git_clone ${rep}  ||  die 1 "${FUNCNAME[*]} : git clone ERROR at ${rep}: the target ${rep} may be exist, Please check it" ;
 	fi
-	pushd ${rep}
-	checkout_e3_plus
-	make init ||  die 1 "MAKE init ERROR at ${rep}: Please check it" ; 
-	make env
-	make patch
-	popd
+	if [[ $(checkIfDir "${rep}") -eq "$EXIST" ]]; then
+	    pushd ${rep}
+	    checkout_e3_plus
+	    make init ||  die 1 "${FUNCNAME[*]} : MAKE init ERROR at ${rep}: Please check it" ; 
+	    make env
+	    make patch
+	    popd
+	else
+	    die 1 "${FUNCNAME[*]} : ${rep} doesn't exist";
+	fi
     done
 
 }
@@ -211,11 +259,15 @@ function build_modules
 {
 
     for rep in  ${module_list[@]}; do
-	pushd ${rep}
-	checkout_e3_plus
-	make build    ||  die 1 "Building Error at ${rep}: Please check the building error" ;
-	make install  ||  die 1 "MAKE INSTALL ERROR at ${rep}: Please check it" ;
-	popd
+	if [[ $(checkIfDir "${rep}") -eq "$EXIST" ]]; then
+	    pushd ${rep}
+	    checkout_e3_plus
+	    make build    ||  die 1 "${FUNCNAME[*]} : Building Error at ${rep}: Please check the building error" ;
+	    make install  ||  die 1 "${FUNCNAME[*]} : MAKE INSTALL ERROR at ${rep}: Please check it" ;
+	    popd
+	else
+	    die 1 "${FUNCNAME[*]} : ${rep} doesn't exist";
+	fi
     done
 }
 
@@ -225,11 +277,15 @@ function clean_modules
     local rep;
     sudo -v;
     for rep in  ${module_list[@]}; do
-	echo "Cleaning .... $rep"
-	pushd ${rep}
-	make uninstall 
-	popd
-	sudo rm -rf ${SC_TOP}/${rep}
+	if [[ $(checkIfDir "${rep}") -eq "$EXIST" ]]; then
+	    echo "Cleaning .... $rep"
+	    pushd ${rep}
+	    make uninstall 
+	    popd
+	    sudo rm -rf ${SC_TOP}/${rep}
+	else
+	    printf " %20s: SKIP %20s, we cannot find it\n"  "${FUNCNAME[*]}"  "${rep}"
+	fi
     done
 }
 
@@ -240,21 +296,27 @@ function git_pull
     local rep;
 
     for rep in  ${base_list[@]}; do
-	pushd ${rep}
-	git pull
-	popd
+	if [[ $(checkIfDir "${rep}") -eq "$EXIST" ]]; then
+	    pushd ${rep}
+	    git pull
+	    popd
+	fi
     done
-	
+    
     for rep in  ${require_list[@]}; do
-	pushd ${rep}
-	git pull
-	popd
+	if [[ $(checkIfDir "${rep}") -eq "$EXIST" ]]; then
+	    pushd ${rep}
+	    git pull
+	    popd
+	fi
     done
 
     for rep in  ${module_list[@]}; do
-	pushd ${rep}
-	git pull
-	popd
+	if [[ $(checkIfDir "${rep}") -eq "$EXIST" ]]; then
+	    pushd ${rep}
+	    git pull
+	    popd
+	fi
     done
 }
    
@@ -265,9 +327,13 @@ function git_add
     local rep;
     local git_add_file=$1; shift;
     for rep in  ${module_list[@]}; do
-	pushd ${rep}
-	git add ${git_add_file}
-	popd
+	if [[ $(checkIfDir "${rep}") -eq "$EXIST" ]]; then
+	    pushd ${rep}
+	    git add ${git_add_file}
+	    popd
+	else
+	    printf " %20s: SKIP %20s, we cannot find it\n"  "${FUNCNAME[*]}"  "${rep}"
+	fi
     done
 }
    
@@ -277,9 +343,13 @@ function git_commit
     local rep;
     local git_commit_comment=$1; shift;
     for rep in  ${module_list[@]}; do
-	pushd ${rep}
-	git commit -m "${git_commit_comment}"
-	popd
+	if [[ $(checkIfDir "${rep}") -eq "$EXIST" ]]; then
+	    pushd ${rep}
+	    git commit -m "${git_commit_comment}"
+	    popd
+	else
+	    printf " %20s: SKIP %20s, we cannot find it\n"  "${FUNCNAME[*]}"  "${rep}"
+	fi
     done
 }
 
@@ -288,10 +358,16 @@ function git_push
 {
     local rep;
     for rep in  ${module_list[@]}; do
-	pushd ${rep}
-	git push
-	popd
+	if [[ $(checkIfDir "${rep}") -eq "$EXIST" ]]; then
+	    pushd ${rep}
+	    git push
+	    popd
+	else
+	    printf " %20s: SKIP %20s, we cannot find it\n"  "${FUNCNAME[*]}"  "${rep}"
+	fi  
     done
+    
+    
 }
 
 

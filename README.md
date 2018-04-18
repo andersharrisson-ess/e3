@@ -19,9 +19,9 @@ in order to compile the ppc64e6500. If Base find the empty toolchain directory, 
 ## Support Platform Status
 
 * Debian 8 (Jessie)  (Tested with x86_64 and ppc64e5000)
-* Debian 9 (Stretch) (Testing with x86_64 and ppc64e5000)
+* Debian 9 (Stretch) (Tested with x86_64 and ppc64e5000)
 * Raspbian Stretch   (Not Test) 
-* CentOS 7.4 (Tested with x86_64 and ppc64e5000)
+* CentOS 7.4         (Tested with x86_64 and ppc64e5000)
 * Ubuntu 16.04.3 LTS (Xenial Xerus)  (Not Test)  
 * Ubuntu 17.10 (Artful Aardvark)  (Not Test) 
 * Fedora ....
